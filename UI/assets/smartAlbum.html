@@ -66,6 +66,12 @@
         <p>
           <div class="input-group mb-3">
             <input type="text" class="form-control" placeholder="Show me ..." id="searchImageText"aria-label="Enter tags" aria-describedby="button-addon2" onenter="search()">
+        <button onClick="start()" id="google-mic" disabled="isRecording">
+          Start speech
+        </button>
+        <button onClick="stop()" disabled="!isRecording">
+          Stop speech
+        </button>
             <div class="input-group-append">
               <button class="btn btn-outline-secondary" type="button" id="button-addon2 searchImageButton" onclick="search()">Search</button>
             </div>

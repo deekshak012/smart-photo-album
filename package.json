@@ -1,0 +1,7 @@
+{
+  "name": "smart-photo-album",
+  "version": "1.0.0",
+  "dependencies": {
+    "mic-recorder-to-mp3": "^2.2.2"
+  }
+}

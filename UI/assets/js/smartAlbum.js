@@ -1,4 +1,61 @@
+import MicRecorder from 'mic-recorder-to-mp3'
+// const MicRecorder = require('mic-recorder-to-mp3');
+
+const Mp3Recorder = new MicRecorder( { bitRate: 128 });
+
+let isBlocked = true
+let isRecording = false
+
+window.onload = function() {
+    init();
+    navigator.mediaDevices.getUserMedia({ audio: true },
+        () => {
+            console.log('Permission Granted');
+            isBlocked = false
+        },
+        () => {
+            console.log('Permission Denied');
+            isBlocked = true
+        }
+    )
+}
+
+function start() {
+    if (isBlocked) {
+        console.log('Permission Denied');
+    } else {
+        Mp3Recorder
+            .start()
+            .then(() => {
+                isRecording = true
+            }).catch((e) => console.error(e));
+    }
+}
+
+function stop() {
+    Mp3Recorder
+        .stop()
+        .getMp3()
+        .then(([buffer, blob]) => {
+            const file = new File(buffer, 'speech-search-request.mp3', {
+                type: blob.type,
+                lastModified: Date.now()
+            })
+            isRecording = false
+        }).catch((e) => console.log(e));
+}
+
+
 function search() {
+
+// // Start recording. Browser will request permission to use your microphone.
+//     recorder.start().then(() => {
+//         // something else
+//         isBlocked = false
+//     }).catch((e) => {
+//         console.error(e);
+//     });
+
     rowDiv = document.getElementById("imageRow");
     rowDiv.innerHTML = "";
     var searchText = document.getElementById("searchImageText").value;
@@ -30,6 +87,7 @@ function search() {
     });
 }
 
+
 function showImages(images){
     
     rowDiv = document.getElementById("imageRow");
@@ -38,7 +96,7 @@ function showImages(images){
         temp = "<div>No images found for this key.</div>";
         rowDiv.innerHTML += temp;
     }        
-    for (var i =0;i<images.length;i++){
+    for (var i =0;i<images.length;i++) {
         temp = '<div class="col"><div class="card shadow-sm"> <img src="' + images[i] +'"  width="100%" height="225"></div></div>'
         rowDiv.innerHTML += temp;
     }
