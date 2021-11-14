@@ -53,24 +53,7 @@ function stopRecording() {
  
 
 function createDownloadLink(blob) {
-    console.log(blob)
-    url = URL.createObjectURL(blob);
-    recordingsList = document.getElementById("recordingsList")
-    var au = document.createElement('audio');
-    var li = document.createElement('li');
-    var link = document.createElement('a');
-    //add controls to the <audio> element 
-    au.controls = true;
-    au.src = url;
-    //link the a element to the blob 
-    link.href = url;
-    link.download = new Date().toISOString() + '.wav';
-    link.innerHTML = link.download;
-    //add the new audio and a elements to the li element 
-    li.appendChild(au);
-    li.appendChild(link);
-    //add the li element to the ordered list 
-    recordingsList.appendChild(li);
+    
 
     let file = new File([blob], "input_audio.wav");
     console.log(file)
@@ -88,10 +71,10 @@ function createDownloadLink(blob) {
     }, function(err, data) {
         if (err) {
             console.log(err)
-            return alert('Error');
+            return alert('Error uploading');
         }
         else{
-            alert('Loading');
+            alert('Wait for text from transcribe');
         }
 
     });
@@ -118,28 +101,7 @@ window.onload = function() {
     )
 }
 
-// function start() {
-    
-//         Mp3Recorder
-//             .start()
-//             .then(() => {
-//                 isRecording = true
-//             }).catch((e) => console.error(e));
-   
-// }
 
-// function stop() {
-//     Mp3Recorder
-//         .stop()
-//         .getMp3()
-//         .then(([buffer, blob]) => {
-//             const file = new File(buffer, 'speech-search-request.mp3', {
-//                 type: blob.type,
-//                 lastModified: Date.now()
-//             })
-//             isRecording = false
-//         }).catch((e) => console.log(e));
-// }
 
 function searchFromVoice() {
     recognition.start();
