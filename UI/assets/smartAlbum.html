@@ -28,6 +28,12 @@
         font-size: 3.5rem;
       }
     }
+    .voice{
+    height:20px;
+    position:relative;
+    top:5px;
+    left:10px;
+  }
   </style>
 
     
@@ -66,18 +72,28 @@
         <p>
           <div class="input-group mb-3">
             <input type="text" class="form-control" placeholder="Show me ..." id="searchImageText"aria-label="Enter tags" aria-describedby="button-addon2" onenter="search()">
-        <button onClick="start()" id="google-mic" disabled="isRecording">
-          Start speech
-        </button>
-        <button onClick="stop()" disabled="!isRecording">
-          Stop speech
-        </button>
             <div class="input-group-append">
               <button class="btn btn-outline-secondary" type="button" id="button-addon2 searchImageButton" onclick="search()">Search</button>
             </div>
+            <div class = "input-group-append">
+              <span><a style="display:inline-block;" href="#" onclick="searchFromVoice()"> <img class="voice" style="display:inline;" src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Google_mic.svg/716px-Google_mic.svg.png" title="Search by Voice"></a></span>
+            </div>
+          </div> 
+            <div class="input-group mb-3 col-md-8">
+              <button class="btn btn-outline-secondary" id="startButton" >
+                Start speech
+              </button>
+              <button class="btn btn-outline-secondary" disabled id="stopButton" >
+                Stop speech
+              </button>
           </div>
+          <ol id="recordingsList"></ol>
+
         </p>
       </div>
+    </div>
+    <div class="row py-lg-1">
+      
     </div>
   </section>
 
@@ -104,6 +120,24 @@
   </div>
 </footer>
 
+<script src="https://sdk.amazonaws.com/js/aws-sdk-2.179.0.min.js"></script>
+<script type="text/javascript">
+  //Bucket Configurations
+  var bucketName = 'storerecording';
+  var bucketRegion = 'us-east-1';
+  
+  AWS.config.update({
+        accessKeyId: "AKIAQC4E2T7MLIY5B77D",
+        secretAccessKey: "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",
+    
+    });
+  
+              var s3 = new AWS.S3({
+                  params: {Bucket: bucketName}
+          });
+  </script>
+
+  <script src="https://cdn.rawgit.com/mattdiamond/Recorderjs/08e7abd9/dist/recorder.js"></script>
   <script src="./js/smartAlbum.js"></script>
   <script src="./js/bootstrap.bundle.min.js"></script>
   <script src='https://kit.fontawesome.com/a076d05399.js' crossorigin='anonymous'></script>

@@ -1,10 +1,108 @@
-import MicRecorder from 'mic-recorder-to-mp3'
-// const MicRecorder = require('mic-recorder-to-mp3');
+var SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+const synth = window.speechSynthesis;
 
-const Mp3Recorder = new MicRecorder( { bitRate: 128 });
+const recognition = new SpeechRecognition();
+const icon = document.querySelector('i.fa.fa-microphone');
 
-let isBlocked = true
-let isRecording = false
+URL = window.URL || window.webkitURL;
+var gumStream;
+var rec;
+var input;
+var AudioContext = window.AudioContext || window.webkitAudioContext;
+var audioContext = new AudioContext;
+var recordButton = document.getElementById("startButton");
+var stopButton = document.getElementById("stopButton");
+recordButton.addEventListener("click", startRecording);
+stopButton.addEventListener("click", stopRecording);
+
+var constraints = {
+    audio: true,
+    video: false
+} 
+
+recordButton.disabled = true;
+stopButton.disabled = false;
+
+
+navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
+    console.log("getUserMedia() success, stream created, initializing Recorder.js ..."); 
+    gumStream = stream;
+    input = audioContext.createMediaStreamSource(stream);
+    rec = new Recorder(input, {
+        numChannels: 1
+    }) 
+    rec.record()
+    console.log("Recording started");
+}).catch(function(err) {
+    recordButton.disabled = false;
+    stopButton.disabled = true;
+    pauseButton.disabled = true
+});
+
+function startRecording() { console.log("recordButton clicked"); stopButton.disabled = false;}
+
+function stopRecording() {
+    console.log("stopButton clicked");
+    stopButton.disabled = true;
+    recordButton.disabled = false;
+    rec.stop();
+    console.log(rec)
+    gumStream.getAudioTracks()[0].stop();
+    rec.exportWAV(createDownloadLink);
+}
+ 
+
+function createDownloadLink(blob) {
+    console.log(blob)
+    url = URL.createObjectURL(blob);
+    recordingsList = document.getElementById("recordingsList")
+    var au = document.createElement('audio');
+    var li = document.createElement('li');
+    var link = document.createElement('a');
+    //add controls to the <audio> element 
+    au.controls = true;
+    au.src = url;
+    //link the a element to the blob 
+    link.href = url;
+    link.download = new Date().toISOString() + '.wav';
+    link.innerHTML = link.download;
+    //add the new audio and a elements to the li element 
+    li.appendChild(au);
+    li.appendChild(link);
+    //add the li element to the ordered list 
+    recordingsList.appendChild(li);
+
+    let file = new File([blob], "input_audio.wav");
+    console.log(file)
+    let fileName = file.name;
+    let foldKey = encodeURIComponent('tmp_audio') + '/';
+    s3 = new AWS.S3({
+        params: {Bucket: 'storerecording'}
+    });
+    let audioKey = foldKey + fileName;
+    console.log(audioKey)
+    s3.upload({
+        Key: audioKey,
+        Body: file,
+        ACL: 'public-read'
+    }, function(err, data) {
+        if (err) {
+            console.log(err)
+            return alert('Error');
+        }
+        else{
+            alert('Loading');
+        }
+
+    });
+}
+
+
+
+
+//stop
+
+
 
 window.onload = function() {
     init();
@@ -20,42 +118,44 @@ window.onload = function() {
     )
 }
 
-function start() {
-    if (isBlocked) {
-        console.log('Permission Denied');
-    } else {
-        Mp3Recorder
-            .start()
-            .then(() => {
-                isRecording = true
-            }).catch((e) => console.error(e));
+// function start() {
+    
+//         Mp3Recorder
+//             .start()
+//             .then(() => {
+//                 isRecording = true
+//             }).catch((e) => console.error(e));
+   
+// }
+
+// function stop() {
+//     Mp3Recorder
+//         .stop()
+//         .getMp3()
+//         .then(([buffer, blob]) => {
+//             const file = new File(buffer, 'speech-search-request.mp3', {
+//                 type: blob.type,
+//                 lastModified: Date.now()
+//             })
+//             isRecording = false
+//         }).catch((e) => console.log(e));
+// }
+
+function searchFromVoice() {
+    recognition.start();
+  
+    recognition.onresult = (event) => {
+      console.log(event)
+      const speechToText = event.results[0][0].transcript;
+      console.log(speechToText);
+  
+      document.getElementById("searchImageText").value = speechToText;
+      search();
     }
-}
-
-function stop() {
-    Mp3Recorder
-        .stop()
-        .getMp3()
-        .then(([buffer, blob]) => {
-            const file = new File(buffer, 'speech-search-request.mp3', {
-                type: blob.type,
-                lastModified: Date.now()
-            })
-            isRecording = false
-        }).catch((e) => console.log(e));
-}
-
+  }
+  
 
 function search() {
-
-// // Start recording. Browser will request permission to use your microphone.
-//     recorder.start().then(() => {
-//         // something else
-//         isBlocked = false
-//     }).catch((e) => {
-//         console.error(e);
-//     });
-
     rowDiv = document.getElementById("imageRow");
     rowDiv.innerHTML = "";
     var searchText = document.getElementById("searchImageText").value;
@@ -155,7 +255,4 @@ function upload(input) {
     reader.readAsDataURL(input.files[0]);
   }
 
-  function onlyUnique(value, index, self) {
-    return self.indexOf(value) === index;
-  }
 
